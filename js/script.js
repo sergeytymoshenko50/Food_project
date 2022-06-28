@@ -87,14 +87,20 @@ window.addEventListener("DOMContentLoaded", ()=>{
     // }, 1000);
     
     //by lesson
-    const deadLine = "2022-07-10";
+    const deadLine = "2022-06-25";
 
     function getTimeRemaining(deadline){
-        const t = Date.parse(deadline) - Date.parse(new Date()),
-            days = Math.floor(t / (1000 * 60 * 60 * 24)),
-            hours = Math.floor((t / (1000 * 60 * 60) % 24)) - 2,
-            minutes = Math.floor((t / 1000 / 60) % 60),
+        let days, hours, minutes, seconds;
+        const t = Date.parse(deadline) - Date.parse(new Date());
+
+        if(t <= 0){
+            days = hours = minutes = seconds = 0;
+        }else {
+            days = Math.floor(t / (1000 * 60 * 60 * 24));
+            hours = Math.floor((t / (1000 * 60 * 60) % 24)) - 2;
+            minutes = Math.floor((t / 1000 / 60) % 60);
             seconds = Math.floor((t / 1000) % 60);
+        }
         
         return {
             "total": t,
@@ -137,4 +143,51 @@ window.addEventListener("DOMContentLoaded", ()=>{
         }
     }
     setClock(".timer", deadLine);
+
+    //modal
+
+    const modalTrigger = document.querySelectorAll("[data-modal"),
+        modal = document.querySelector(".modal"),
+        modalCloseBtn = document.querySelector("[data-close]");
+
+    modalTrigger.forEach(btn=>{
+        btn.addEventListener("click", ()=>{        
+            modal.classList.add("show");
+            modal.classList.remove("hide");
+            document.body.style.overflow = "hidden";
+        });
+    });    
+
+    function closeModal(){
+        modal.classList.add("hide");
+        modal.classList.remove("show");
+        document.body.style.overflow = "";
+    }
+
+    modalCloseBtn.addEventListener("click", closeModal);
+    
+    modal.addEventListener("click", (e)=>{
+        if(e.target === modal){
+            closeModal();
+        }
+    });
+
+    document.addEventListener("keydown",(e)=>{
+        if(e.code === "Escape" && modal.classList.contains("show")){
+            closeModal();
+        }
+    });
+
+    // const btns = document.querySelectorAll("[data-modal"),
+    //     closeModal = document.querySelector("[data-close]");
+
+    // for(let btn of btns){
+    //     btn.addEventListener("click", ()=>{
+    //         document.querySelector(".modal").style.display = "block";            
+    //     });
+    // }
+    
+    // closeModal.addEventListener("click", ()=>{
+    //     document.querySelector(".modal").style.display = "none";
+    // });
 });
