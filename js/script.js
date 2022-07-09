@@ -166,7 +166,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
         modal.classList.add("hide");
         modal.classList.remove("show");
         document.body.style.overflow = "";
-        clearInterval(modalTimerId);
+        // clearInterval(modalTimerId);
     }
     
     modal.addEventListener("click", (e)=>{
@@ -307,34 +307,35 @@ window.addEventListener("DOMContentLoaded", ()=>{
             form.querySelector("button").innerHTML ="";
             form.querySelector("button").append(statusMessage);
 
-            const r = new XMLHttpRequest();
-
-            r.open("POST", "server.php");
-            r.setRequestHeader("Content-type", "application/json");//use headers if we need send data in json format
+            
+            //use headers if we need send data in json format
             // r.setRequestHeader("Content-type", "multipart/form-data"); -> if we use new FormData setRequestHeader we dont need use HEADER!!!!!! IMPORTANT!!!!!
             // multipart/form-data -> use for works with FormData
 
-            const fornData = new FormData(form);
-            
+            const formData = new FormData(form);
+
             const object = {};
-            fornData.forEach((value,key)=>{                
+            formData.forEach((value,key)=>{                
                 object[key] = value;
             });
-
-            const json = JSON.stringify(object);
             
-            r.send(json);
-            r.addEventListener("load", ()=>{
-                if (r.status === 200){
-                    console.log(r.response);                    showThanksModal(message.success);
-                    form.reset();
-                    statusMessage.remove();
-                    form.querySelector("button").innerHTML = btnText;
-                }else{
-                    showThanksModal(message.failure);
-                }
+            fetch("server.php", {
+                method: "POST",
+                headers: {
+                    "Content-type": "miltipart/form-data"
+                },
+                body: JSON.stringify(object)
+            }).then(data=> data.text()
+            ).then(data =>{
+                console.log(data); 
+                showThanksModal(message.success);
+                statusMessage.remove();
+                form.querySelector("button").innerHTML = btnText;
+            }).catch(()=>{
+                showThanksModal(message.failure);
+            }).finally(()=>{
+                form.reset();
             });
-
         });
 
     }
@@ -361,6 +362,11 @@ window.addEventListener("DOMContentLoaded", ()=>{
         }, 4000);
 
     }
+
+    
+   
+
+
     // const subTitles = {
     //         fintes: "Фитнес",
     //         premium: "Премиум",
