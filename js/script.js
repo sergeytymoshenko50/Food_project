@@ -41,52 +41,8 @@ window.addEventListener("DOMContentLoaded", ()=>{
     });
 
     //timer
-    //my version
-    // const endTimer = "2022-06-29";
-
-    // function getTime(endTimer){
-    //     const leftTotalTimeMs = Date.parse(endTimer) - Date.parse(new Date()),
-    //         leftDays = Math.floor(leftTotalTimeMs / (1000*60*60*24)),
-    //         leftHours = Math.floor(leftTotalTimeMs / 1000 / 60 / 60 % 24) - 2,
-    //         leftMinutes = Math.floor(leftTotalTimeMs / 1000 / 60 % 60),
-    //         leftSeconds = Math.floor((leftTotalTimeMs / 1000) % 60);
-            
-    //         return {                
-    //             leftDays,
-    //             leftHours,
-    //             leftMinutes,
-    //             leftSeconds,
-    //             leftTotalTimeMs
-    //         };
-        
-    // }
-
-    // function addZero(num){
-    //     if(num < 10){
-    //         return `0${num}`;
-    //     }else{
-    //         return num;
-    //     }
-    // }
-
-    // function setTime(timeObj){
-    //     const timerBlocks = document.querySelectorAll(".timer__block span");
-    //     const keys = Object.keys(timeObj);
-        
-    //     timerBlocks.forEach((span, i)=>{            
-    //         span.innerHTML = addZero(timeObj[keys[i]]);
-    //     });
-    //     if(timeObj.leftTotalTimeMs <= 0){
-    //         clearInterval(startTimer);
-    //     }
-        
-    // }
-    // setTime(getTime(endTimer));
-    // const startTimer = setInterval(()=>{
-    //     setTime(getTime(endTimer));
-    // }, 1000);
     
-    //by lesson
+
     const deadLine = "2022-06-25";
 
     function getTimeRemaining(deadline){
@@ -232,7 +188,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
                 this.element = "menu__item";
                 element.classList.add(this.element);
             }else{
-                this.clases.forEach(className => element.classList.add(className))
+                this.clases.forEach(className => element.classList.add(className));
             }
             
             this.clases.forEach(className => element.classList.add(className));
@@ -321,7 +277,6 @@ window.addEventListener("DOMContentLoaded", ()=>{
                         
             postData("http://localhost:3000/requests", json)
             .then(data =>{
-                console.log(data); 
                 showThanksModal(message.success);
                 statusMessage.remove();
                 form.querySelector("button").innerHTML = btnText;
@@ -333,6 +288,8 @@ window.addEventListener("DOMContentLoaded", ()=>{
         });
 
     }
+
+    
 
     function showThanksModal(message){
         const prevModalDialog = document.querySelector(".modal__dialog");
@@ -357,8 +314,123 @@ window.addEventListener("DOMContentLoaded", ()=>{
 
     }
 
+    // slider
+
+    const slides = document.querySelectorAll(".offer__slide"),
+        prev = document.querySelector(".offer__slider-prev"),
+        next = document.querySelector(".offer__slider-next"),
+        total = document.querySelector("#total"),
+        current = document.querySelector("#current"),
+        slidesWrapper = document.querySelector(".offer__slider-wrapper"),
+        slidesField = document.querySelector(".offer__slider-inner"),
+        width = window.getComputedStyle(slidesWrapper).width;
+    let slideIndex = 1,
+        offset = 0;
     
+    if(slides.length < 10){
+        total.textContent = `0${slides.length}`;
+        current.textContent = `0${slideIndex}`;
+    }else{
+        total.textContent = slides.length;
+        current.textContent = slideIndex;
+    }
+
+    slidesField.style.width = 100 * slides.length + "%";
+    slidesField.style.display = "flex";
+    slidesField.style.transition = "0.5s all";
+
+    slidesWrapper.style.overflow = "hidden";
+    slides.forEach(slide => {
+        slide.style.width = width;
+    });
+
+    next.addEventListener("click", ()=>{
+        if(offset == parseInt(width) * (slides.length -1)){
+            offset = 0;
+        }else {
+            offset += parseInt(width);
+        }
+        slidesField.style.transform = `translateX(-${offset}px)`;
+
+        if(slideIndex == slides.length){
+            slideIndex = 1;
+        }else{
+            slideIndex++;
+        }
+
+        if(slides.length < 10){
+            current.textContent = `0${slideIndex}`;
+        }else{
+            current.textContent = slideIndex;
+        }
+    });
+
+    prev.addEventListener("click", ()=> {
+        if(offset == 0 ){
+            offset = parseInt(width) * (slides.length -1);
+        }else {
+            offset -= parseInt(width);
+        }
+
+        slidesField.style.transform = `translateX(-${offset}px)`;
+
+        if(slideIndex == 1){
+            slideIndex = slides.length;
+        }else{
+            slideIndex--;
+        }
+
+        if(slides.length < 10){
+            current.textContent = `0${slideIndex}`;
+        }else{
+            current.textContent = slideIndex;
+        }
+    });
+
+
+    // showSlides(slideIndex);
+    
+    // if(slides.length < 10){
+    //     total.textContent = `0${slides.length}`;
+    // }else{
+    //     total.textContent = slides.length;
+    // }
+
+    // function showSlides(n) {
+    //     if(n > slides.length){
+    //         slideIndex = 1;
+    //     }
+
+    //     if(n < 1){
+    //         slideIndex = slides.length;
+    //     }
+
+    //     slides.forEach(slide =>{
+    //         slide.classList.add("hide");
+    //     });
+    //     slides[slideIndex - 1].classList.add("show");
+    //     slides[slideIndex - 1].classList.remove("hide");
+
+    //     if(slides.length < 10){
+    //         current.textContent = `0${slideIndex}`;
+    //     }else{
+    //         current.textContent = slideIndex;
+    //     }
+    // }
+
+    // function plusSlides(n){
+    //     showSlides(slideIndex += n);
+    // }
+
+    // prev.addEventListener("click", ()=>{
+    //     plusSlides(-1);
+    // });
+    // next.addEventListener("click", ()=>{
+    //     plusSlides(1);
+    // });
    
+
+    
 
 });
 
