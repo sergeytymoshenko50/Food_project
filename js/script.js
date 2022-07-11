@@ -249,34 +249,24 @@ window.addEventListener("DOMContentLoaded", ()=>{
         }
     }
 
-    new MenuCard(
-        "img/tabs/vegy.jpg",
-        "vegy",
-        'Меню "Фитнес"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-        9,
-        ".menu .container",
-        "menu__item"
-    ).render();
-    new MenuCard(
-        "img/tabs/elite.jpg",
-        "elite",
-        'Меню “Премиум”',
-        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-        14,
-        ".menu .container",
-        "menu__item"
-    ).render();
+    const geyResources = async (url) => {
+        const res = await fetch(url);
 
-    new MenuCard(
-        "img/tabs/post.jpg",
-        "post",
-        'Меню "Постное"',
-        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-        21,
-        ".menu .container",
-        "menu__item"
-    ).render();
+        if(!res.ok) {
+            throw new Error(`could not fetch ${url}, status: ${res.status}`);
+        }
+
+        return await res.json();
+    };
+
+    geyResources("http://localhost:3000/menu")
+    .then(data =>{
+        data.forEach(({img, altimg, title, descr, price, src}) =>{
+            new MenuCard(img, altimg, title, descr, price, ".menu .container", "menu__item").render();
+        });
+    });
+
+    
 
     // forms work with server
 
@@ -289,10 +279,22 @@ window.addEventListener("DOMContentLoaded", ()=>{
     };
    
     forms.forEach(form => {
-        postData(form);
+        bindPostData(form);
     });
+   
+    const postData = async (url, data) => {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: data
+        });
 
-    function postData(form){
+        return await res.json();
+    };
+
+    function bindPostData(form){
         form.addEventListener("submit", (e)=>{
             e.preventDefault();
                         
@@ -312,21 +314,13 @@ window.addEventListener("DOMContentLoaded", ()=>{
             // r.setRequestHeader("Content-type", "multipart/form-data"); -> if we use new FormData setRequestHeader we dont need use HEADER!!!!!! IMPORTANT!!!!!
             // multipart/form-data -> use for works with FormData
 
-            const formData = new FormData(form);
-
-            const object = {};
-            formData.forEach((value,key)=>{                
-                object[key] = value;
-            });
             
-            fetch("server.php", {
-                method: "POST",
-                headers: {
-                    "Content-type": "miltipart/form-data"
-                },
-                body: JSON.stringify(object)
-            }).then(data=> data.text()
-            ).then(data =>{
+            const formData = new FormData(form);
+            
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
+                        
+            postData("http://localhost:3000/requests", json)
+            .then(data =>{
                 console.log(data); 
                 showThanksModal(message.success);
                 statusMessage.remove();
@@ -366,60 +360,5 @@ window.addEventListener("DOMContentLoaded", ()=>{
     
    
 
-
-    // const subTitles = {
-    //         fintes: "Фитнес",
-    //         premium: "Премиум",
-    //         simple: "Постное"
-    //     },
-    //     discriptions = [
-    //                 ' - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-    //                 ' мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-    //                 ' - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.'
-    //             ],
-    //     prices = [229, 550, 430],
-    //     image = [
-    //         "img/tabs/vegy.jpg",
-    //         "img/tabs/elite.jpg",
-    //         "img/tabs/post.jpg"
-    //     ];
-
-    // class MenuItem {
-    //     constructor (parent, image, subTitle, discription, price) {
-    //         this.parent = parent;
-    //         this.image = image;
-    //         this.subTitle = subTitle;
-    //         this.discription = discription;
-    //         this.price = price;
-    //     }
-    //     createItem() {      
-             
-    //         document.querySelector(this.parent).innerHTML += `
-    // <div class="menu__item">
-        //     <img src=${this.image} alt="elite">
-        //     <h3 class="menu__item-subtitle">Меню ${this.subTitle}</h3>
-        //     <div class="menu__item-descr">В меню ${this.subTitle} ${this.discription}</div>
-        //     <div class="menu__item-divider"></div>
-        //     <div class="menu__item-price">
-        //         <div class="menu__item-cost">Цена:</div>
-        //         <div class="menu__item-total"><span>${this.price}</span> грн/день</div>
-        //     </div>
-        // </div>`;
-            
-    //     }
-       
-    // }
-    // const {fitnes, premium, simple} = subTitles;
-
-    // const fitnes1 = new MenuItem (".menu__field .container", image[0], fitnes, discriptions[0], prices[0]); 
-    // const premium1 = new MenuItem (".menu__field .container", image[1], premium, discriptions[1], prices[1]); 
-    // const simple1 = new MenuItem (".menu__field .container", image[2], simple, discriptions[2], prices[2]); 
-
-    // fitnes1.createItem();
-    // premium1.createItem();
-    // simple1.createItem();
-    
-    
-   
 });
 
