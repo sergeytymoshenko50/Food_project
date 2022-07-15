@@ -323,26 +323,62 @@ window.addEventListener("DOMContentLoaded", ()=>{
         current = document.querySelector("#current"),
         slidesWrapper = document.querySelector(".offer__slider-wrapper"),
         slidesField = document.querySelector(".offer__slider-inner"),
-        width = window.getComputedStyle(slidesWrapper).width;
+        width = window.getComputedStyle(slidesWrapper).width,
+        slider = document.querySelector(".offer__slider");
+
     let slideIndex = 1,
         offset = 0;
     
-    if(slides.length < 10){
-        total.textContent = `0${slides.length}`;
-        current.textContent = `0${slideIndex}`;
-    }else{
-        total.textContent = slides.length;
-        current.textContent = slideIndex;
+    function addZero(arrSlides, currElem, ...rest){
+        if(rest.length > 0){
+            if(arrSlides.length < 10){
+                rest[0].textContent = `0${arrSlides.length}`;
+                currElem.textContent = `0${slideIndex}`;
+            }else{
+                rest.textContent = arrSlides.length;
+                currElem.textContent = slideIndex;
+            }
+        }else {
+            if(arrSlides.length < 10){
+                currElem.textContent = `0${slideIndex}`;
+            }else{
+                currElem.textContent = slideIndex;
+            }
+        }
     }
-
-    slidesField.style.width = 100 * slides.length + "%";
-    slidesField.style.display = "flex";
-    slidesField.style.transition = "0.5s all";
+    
+    addZero(slides, current, total);
+        
+    slidesField.style.cssText = `
+                        display: flex;
+                        transition: 0.5s all;
+                        width: ${100 * slides.length}%;
+                    `;
 
     slidesWrapper.style.overflow = "hidden";
+    
     slides.forEach(slide => {
         slide.style.width = width;
     });
+
+    slider.style.position = "relative";
+
+    const indicators = document.createElement("ol"),
+        dots = [];
+
+    indicators.classList.add("carousel-indicators");
+    slider.append(indicators);
+
+    for(let i = 0; i < slides.length;i++){
+        const dot = document.createElement("li");
+        dot.setAttribute("data-slide-to", i + 1);
+        dot.classList.add("dot");
+        if(i == 0 ){
+            dot.style.opacity = 1;
+        }
+        indicators.append(dot);
+        dots.push(dot);
+    }
 
     next.addEventListener("click", ()=>{
         if(offset == parseInt(width) * (slides.length -1)){
@@ -358,11 +394,8 @@ window.addEventListener("DOMContentLoaded", ()=>{
             slideIndex++;
         }
 
-        if(slides.length < 10){
-            current.textContent = `0${slideIndex}`;
-        }else{
-            current.textContent = slideIndex;
-        }
+        addZero(slides, current);
+       makeActiveDot(dots);
     });
 
     prev.addEventListener("click", ()=> {
@@ -380,57 +413,102 @@ window.addEventListener("DOMContentLoaded", ()=>{
             slideIndex--;
         }
 
-        if(slides.length < 10){
-            current.textContent = `0${slideIndex}`;
-        }else{
-            current.textContent = slideIndex;
-        }
+        addZero(slides, current);
+
+        makeActiveDot(dots);
     });
 
+    dots.forEach(dot => {
+        dot.addEventListener("click", (e)=>{
+            const slideTo = e.target.getAttribute("data-slide-to");
 
-    // showSlides(slideIndex);
-    
-    // if(slides.length < 10){
-    //     total.textContent = `0${slides.length}`;
-    // }else{
-    //     total.textContent = slides.length;
-    // }
+            slideIndex = slideTo;
+            offset = parseInt(width) * (slideTo -1);
 
-    // function showSlides(n) {
-    //     if(n > slides.length){
-    //         slideIndex = 1;
-    //     }
+            slidesField.style.transform = `translateX(-${offset}px)`;
 
-    //     if(n < 1){
-    //         slideIndex = slides.length;
-    //     }
+            addZero(slides, current);
 
-    //     slides.forEach(slide =>{
-    //         slide.classList.add("hide");
-    //     });
-    //     slides[slideIndex - 1].classList.add("show");
-    //     slides[slideIndex - 1].classList.remove("hide");
+            makeActiveDot(dots);
+        });
+    });
 
-    //     if(slides.length < 10){
-    //         current.textContent = `0${slideIndex}`;
-    //     }else{
-    //         current.textContent = slideIndex;
-    //     }
-    // }
+    function makeActiveDot(dotsArr){
+        dotsArr.forEach(dot => dot.style.opacity = "0.5");
+        dotsArr[slideIndex - 1].style.opacity = 1;
+    }
 
-    // function plusSlides(n){
-    //     showSlides(slideIndex += n);
-    // }
+    //calculator
 
-    // prev.addEventListener("click", ()=>{
-    //     plusSlides(-1);
-    // });
-    // next.addEventListener("click", ()=>{
-    //     plusSlides(1);
-    // });
+   const result = document.querySelector(".calculating__result span");
+   let sex = "femail",
+        ratio = 1.375, 
+        height, weight, age;
+
+    function calcTotal(){
+        if(!height || !weight || !age){
+            result.textContent = "____";
+            return;
+        }
+
+        if(sex == "femail"){
+            result.textContent = ((447.6 + (9.2 *weight) + (3.1 * height) - (4.3 * age)) * ratio).toFixed(0);
+        }else{
+            result.textContent = ((88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)) * ratio).toFixed(0);
+        }
+    }
+
+   calcTotal();
+
+   function getStaticInformation(parent, activeClass){
+        const elements = document.querySelectorAll(`${parent} div`);
+
+        elements.forEach(elem =>{
+            elem.addEventListener("click", (e)=>{
+                if(e.target.getAttribute("data-ratio")){
+                    ratio = +e.target.getAttribute("data-ratio");
+                }else {
+                    sex = e.target.getAttribute("id");
+                }
+
+                elements.forEach(elem => {
+                    elem.classList.remove(activeClass);
+                });
+
+                e.target.classList.add(activeClass);
+
+                calcTotal();
+            });
+        });
+        
+    }
+
+   getStaticInformation("#gender", "calculating__choose-item_active");
+   getStaticInformation(".calculating__choose_big", "calculating__choose-item_active");
+
+   function getDynamycInformation(selector){
+        const input = document.querySelector(selector);
+
+        input.addEventListener("input", () =>{
+            switch(input.getAttribute("id")) {
+                case "height": 
+                    height = +input.value;
+                    break;
+                case "weight": 
+                    weight = +input.value;
+                    break;
+                case "age":
+                    age = +input.value;
+            }
+            calcTotal();
+            console.log(sex, height, weight, age, ratio);
+        });
+        
+   }
+
+   getDynamycInformation("#height");
+   getDynamycInformation("#weight");
+   getDynamycInformation("#age");
    
-
-    
-
 });
 
